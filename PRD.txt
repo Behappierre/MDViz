@@ -1,0 +1,701 @@
+s a complete package you can hand directly to your coding agent.
+
+Product Requirements Document (PRD)
+1) Product Overview
+Product Name
+
+MD Visualizer (working title)
+
+Problem Statement
+
+Users can read Markdown files in text editors, but non-technical users struggle to understand structure and reuse content with formatting intact. Existing tools either:
+
+Render markdown but don’t support intuitive drag-and-drop organization, or
+
+Offer rich text editing but break round-trip markdown fidelity.
+
+Goal
+
+Build a low-code-friendly web application where a user can:
+
+Drag and drop a Markdown (.md) file
+
+See a visual representation of the document
+
+Reorder content blocks with drag-and-drop
+
+Copy selected content with formatting preserved
+
+Export the updated content back to valid Markdown
+
+Success Criteria
+
+95%+ structural fidelity for common markdown elements on import/export
+
+Copy/paste preserves formatting in target apps (Google Docs, Word, Slack, Email) for core elements
+
+Time-to-first-render under 1 second for files ≤ 500 KB
+
+User can complete “drop → reorder → copy → export” flow in under 3 minutes without guidance
+
+2) Objectives and Non-Objectives
+Objectives (MVP)
+
+Drag/drop .md file
+
+Visual rendering of markdown blocks
+
+Block-level drag-and-drop reorder
+
+Copy selected block(s) as formatted content
+
+Export edited document as markdown
+
+Non-Objectives (MVP)
+
+Real-time multi-user collaboration
+
+Full desktop app/offline-first
+
+Arbitrary embedded HTML editing
+
+Git integration
+
+Advanced publishing workflow
+
+3) User Personas
+
+Business User / Analyst
+
+Wants to read markdown docs without syntax noise
+
+Wants to paste formatted sections into reports/slides/emails
+
+Product/Project Manager
+
+Wants to reorganize docs quickly by dragging sections
+
+Needs structure preserved for engineering handoff
+
+Developer/Technical Writer
+
+Wants round-trip markdown fidelity and predictable export
+
+4) User Stories
+Core User Stories
+
+As a user, I can drag-and-drop a markdown file to load it.
+
+As a user, I can view the markdown as visual blocks (headings, lists, tables, code).
+
+As a user, I can drag blocks up/down to reorganize document flow.
+
+As a user, I can copy selected block(s) and paste with formatting retained.
+
+As a user, I can export/download the updated markdown file.
+
+Secondary Stories
+
+As a user, I can undo/redo actions.
+
+As a user, I can see parsing errors for unsupported syntax.
+
+As a user, I can preserve code blocks exactly during export.
+
+5) Functional Requirements
+FR-1 File Import
+
+Accept file types: .md, .markdown, .txt
+
+Drag/drop area + click-to-upload fallback
+
+Max file size configurable (default 5 MB)
+
+On upload, parse markdown into internal document model (AST)
+
+Acceptance Criteria
+
+Invalid file type rejected with clear message
+
+Valid .md renders within 1 second for ≤ 500 KB file
+
+FR-2 Markdown Parsing
+
+Parse Markdown using CommonMark + GFM subset:
+
+headings (h1-h6)
+
+paragraphs
+
+bold/italic/strikethrough
+
+links
+
+unordered/ordered/task lists
+
+blockquotes
+
+code blocks/inline code
+
+horizontal rules
+
+tables
+
+Preserve unknown/unsupported nodes as raw blocks (non-destructive behavior)
+
+Acceptance Criteria
+
+Parsed document represented in canonical AST model
+
+Unsupported syntax not discarded; round-trip safe mode enabled
+
+FR-3 Visual Rendering
+
+Render each top-level node as a “block card”
+
+Support nested display for list children
+
+Code blocks rendered monospaced with language label if present
+
+Tables rendered with grid UI
+
+Acceptance Criteria
+
+All supported nodes visibly distinct and readable
+
+Rendering order matches source markdown order
+
+FR-4 Drag-and-Drop Reordering
+
+User can drag block cards to new positions
+
+Drag handles visible on hover/focus
+
+Maintain structural constraints:
+
+Do not allow illegal nesting via drag in MVP
+
+Reorder only top-level blocks in MVP
+
+Update internal AST upon drop
+
+Acceptance Criteria
+
+Reordered blocks persist in document model
+
+Undo step created for each drop action
+
+FR-5 Copy with Formatting
+
+User can select one or multiple blocks
+
+Copy action writes to clipboard:
+
+text/html (formatted)
+
+text/plain (fallback)
+
+text/markdown (if supported by browser API path; otherwise append markdown to plain fallback metadata flow)
+
+Preserve headings, lists, tables, links, inline styles, code formatting
+
+Acceptance Criteria
+
+Paste into Docs/Word/Slack retains core formatting
+
+Plain-text fallback always available
+
+FR-6 Export
+
+Export button downloads updated .md
+
+Filename default: original name + -edited.md
+
+Markdown serialization from canonical AST
+
+Acceptance Criteria
+
+Export is valid markdown
+
+Structure matches visual ordering and edits
+
+FR-7 Undo/Redo (MVP-lite)
+
+Undo/redo stack for:
+
+reorder actions
+
+inline text edits (if enabled in MVP)
+
+Min stack depth: 50 actions
+
+Acceptance Criteria
+
+User can revert last action reliably with keyboard shortcuts (Ctrl/Cmd+Z, Shift+Ctrl/Cmd+Z)
+
+FR-8 Error Handling
+
+Parsing failures displayed with line reference where possible
+
+Partial render mode for recoverable parse states
+
+App should never hard-crash on malformed markdown
+
+Acceptance Criteria
+
+Malformed input returns user-friendly error state + retry option
+
+FR-9 Accessibility
+
+Keyboard accessible drag/reorder alternative (Move Up/Down buttons)
+
+Focus states on interactive elements
+
+Semantic headings and ARIA labels
+
+Acceptance Criteria
+
+Core flows are keyboard operable
+
+Meets WCAG 2.1 AA for core interfaces
+
+6) Non-Functional Requirements
+
+Performance
+
+≤1s initial render for 500 KB docs on modern laptop
+
+≤150ms perceived delay for block reorder UI response
+
+Reliability
+
+No data loss during reorder/copy/export flows
+
+Autosave local draft every 10 seconds (optional in MVP)
+
+Security
+
+Sanitize HTML output for rendering/copy operations
+
+No script execution from raw markdown HTML
+
+Scalability
+
+Support up to 10,000 blocks in virtualized mode (post-MVP)
+
+MVP target: comfortable up to ~1,500 blocks
+
+Compatibility
+
+Latest Chrome, Edge, Firefox, Safari (last 2 major versions)
+
+7) UX Requirements
+Main Screen Layout
+
+Header: Upload / Export / Undo / Redo / Copy
+
+Left panel (optional): document outline
+
+Main panel: visual block stream
+
+Status bar: parse warnings, block count, selection count
+
+Interactions
+
+Drop file → auto-parse → auto-render
+
+Click block to select
+
+Shift-click for multi-select
+
+Drag handle to reorder
+
+Copy button becomes active on selection
+
+8) Data Model (Product-level)
+Document
+- id
+- name
+- sourceMarkdown
+- ast (canonical)
+- createdAt
+- updatedAt
+
+BlockNode
+- id
+- type
+- attrs (level, language, etc.)
+- children[]
+- raw (for unknown/unsupported)
+- position
+
+9) Analytics & Telemetry
+
+Track:
+
+upload_success/upload_failure
+
+parse_duration_ms
+
+render_duration_ms
+
+reorder_count
+
+copy_count
+
+export_count
+
+fidelity_warning_count (unsupported nodes retained)
+
+10) MVP Scope and Timeline (example)
+Sprint 1
+
+File import + parser + renderer (read-only)
+
+Basic block cards + selection model
+
+Sprint 2
+
+Drag/drop reorder + AST update + export markdown
+
+Copy to clipboard (HTML/plain)
+
+Sprint 3
+
+Undo/redo + error handling + accessibility pass
+
+Cross-app clipboard QA + bug fixes
+
+11) Acceptance Test Matrix (high level)
+
+Import 20 sample markdown files (simple to complex)
+
+Reorder 10 blocks and export
+
+Diff source vs exported for expected structural changes only
+
+Copy/paste matrix across Docs/Word/Slack/Outlook
+
+Malformed markdown resilience tests
+
+Keyboard navigation/accessibility regression tests
+
+Technical Requirements Document (TRD)
+1) Architecture Overview
+Recommended Pattern
+
+Low-code shell + custom web component
+
+Low-code handles auth, routing, storage, deployment
+
+Custom component handles parsing/render/reorder/copy/export
+
+Logical Components
+
+File Intake Module
+
+Markdown Pipeline
+
+Parse → Normalize → AST Store
+
+Rendering Engine
+
+DnD Engine
+
+Clipboard Engine
+
+Serialization/Export Engine
+
+State + Undo/Redo Manager
+
+Sanitization & Security Layer
+
+2) Proposed Stack (web-first)
+
+Parser ecosystem:
+
+unified
+
+remark-parse
+
+remark-gfm
+
+remark-rehype
+
+rehype-stringify
+
+Markdown serializer:
+
+remark-stringify
+
+Drag/drop:
+
+dnd-kit (recommended) or react-beautiful-dnd equivalent
+
+State:
+
+Zustand / Redux Toolkit / low-code state bridge
+
+Clipboard:
+
+Browser Clipboard API + fallback execCommand('copy') pathway
+
+Sanitization:
+
+DOMPurify for HTML rendering/copy safety
+
+ID generation:
+
+stable UUID or deterministic hash per node
+
+(If your low-code platform doesn’t allow React libs, wrap this as embeddable JS module/web component.)
+
+3) Canonical AST Strategy
+Canonical Form
+
+Use MDAST-like normalized JSON:
+
+top-level root.children[]
+
+each node gets stable nodeId
+
+unknown nodes stored in raw with passthrough behavior
+
+Why canonical?
+
+Decouples parser/output libs from UI
+
+Makes undo/redo and drag operations deterministic
+
+Supports reliable serialization and testing
+
+4) Parsing Pipeline
+
+Read file as UTF-8
+
+Parse markdown to AST
+
+Normalize nodes:
+
+attach nodeId
+
+normalize whitespace policy
+
+mark unsupported nodes
+
+Store as canonical AST
+
+Generate render model from AST
+
+Error Recovery
+
+If parser throws, attempt fallback parse mode
+
+Surface line/column when available
+
+Preserve original source for recovery/export
+
+5) Rendering Engine Details
+
+Render by node type mapping:
+
+heading → HeadingBlock
+
+paragraph → ParagraphBlock
+
+list → ListBlock
+
+table → TableBlock
+
+code → CodeBlock
+
+raw/unknown → RawBlock (read-only in MVP)
+
+Virtualize long documents (post-MVP)
+
+Block selection state separate from AST
+
+6) Drag-and-Drop Details
+MVP Rules
+
+Reorder only top-level blocks
+
+No cross-nesting transformations
+
+Preserve children within block
+
+Algorithm
+
+On drag end:
+
+sourceIndex, destinationIndex
+
+immutable reorder in root.children
+
+push previous AST snapshot pointer to undo stack
+
+recompute positions
+
+7) Clipboard Engine
+Copy Flow
+
+Given selected block IDs:
+
+Extract nodes from canonical AST
+
+Serialize selection to:
+
+HTML fragment (sanitized)
+
+markdown text
+
+plain text (markdown stripped or normalized)
+
+Write via Clipboard API as multi-MIME payload where available
+
+Browser Fallback
+
+If rich clipboard unsupported:
+
+copy plain text
+
+notify user “Rich format not supported in this browser context”
+
+8) Export Engine
+
+Serialize full canonical AST to markdown with deterministic formatting options:
+
+list indentation style
+
+code fence style
+
+heading spacing
+
+Normalize trailing newline
+
+Download via blob URL
+
+9) State Management
+
+State domains:
+
+docState: metadata, source, parse status
+
+astState: canonical AST, version
+
+uiState: selection, dragging, focus, warnings
+
+historyState: undo/redo stacks
+
+Undo/redo approach:
+
+store patches (preferred) or bounded snapshots
+
+bounded memory cap (e.g., 100 history entries)
+
+10) Security & Trust Boundaries
+
+Never inject unsanitized HTML into DOM
+
+Sanitize HTML before render and before clipboard write
+
+Disable script/event handler attributes
+
+Escape unknown raw blocks in render mode
+
+Consider Content Security Policy (CSP) in host app
+
+11) API/Interface Contracts (if modularized)
+interface ParseResult {
+  ast: CanonicalAst;
+  warnings: ParseWarning[];
+  errors: ParseError[];
+}
+
+interface ClipboardPayload {
+  html: string;
+  markdown: string;
+  plain: string;
+}
+
+
+Core service contracts:
+
+parseMarkdown(text) -> ParseResult
+
+reorderBlocks(ast, from, to) -> ast
+
+serializeMarkdown(ast) -> string
+
+serializeClipboard(ast, selectedIds) -> ClipboardPayload
+
+12) QA Strategy
+Unit Tests
+
+parser normalization
+
+reorder logic
+
+serializer round-trip for supported nodes
+
+clipboard payload generation
+
+Integration Tests
+
+drag/drop updates AST and UI
+
+copy operation writes expected MIME data
+
+export produces valid file
+
+Golden File Tests
+
+50+ markdown fixtures
+
+assert import→export stability
+
+Manual Matrix
+
+Chrome/Edge/Firefox/Safari
+
+Paste targets: Google Docs, Word, Slack, Outlook, Notion
+
+13) Deployment & Observability
+
+Feature flags for:
+
+inline editing
+
+table editing
+
+advanced clipboard
+
+Runtime logs:
+
+parse failures
+
+clipboard failures
+
+export failures
+
+Error monitoring:
+
+Sentry/Datadog equivalent
+
+14) Risks & Mitigations
+
+Rich clipboard inconsistency
+
+Mitigation: fallback strategy + compatibility matrix docs
+
+Markdown edge-case fidelity
+
+Mitigation: fixture suite + passthrough raw nodes
+
+Low-code host limitations
+
+Mitigation: encapsulate editor as embeddable component
+
+Performance on very large files
+
+Mitigation: virtualization + incremental rendering roadmap
