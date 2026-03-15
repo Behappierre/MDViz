@@ -13,18 +13,7 @@ export interface StatusBarProps {
 export function StatusBar({ status, statusMessage, selectedCount, blockCount }: StatusBarProps) {
   const isError = status === 'error';
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '6px 8px',
-        fontSize: 12,
-        color: isError ? '#c00' : '#666',
-        borderTop: '1px solid #eee',
-        background: '#fafafa',
-      }}
-    >
+    <div className={`status-bar${isError ? ' status-bar--error' : ''}`}>
       <span>
         {blockCount} block{blockCount !== 1 ? 's' : ''}
         {selectedCount > 0 && ` · ${selectedCount} selected`}

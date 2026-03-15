@@ -124,10 +124,16 @@ function blockToHtml(block: Block): string {
 
 /**
  * Build clipboard payload for selected blocks. HTML is sanitized.
+ * The HTML is wrapped in a full document so that apps like Word pick up
+ * the font-family instead of falling back to Times New Roman.
  * Plain text is always present as fallback.
  */
 export function buildClipboardPayload(blocks: Block[]): ClipboardPayload {
-  const html = sanitizeHtml(blocks.map(blockToHtml).join(''));
+  const body = sanitizeHtml(blocks.map(blockToHtml).join(''));
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>` +
+    `body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.5;color:#000;}` +
+    `code,pre{font-family:Consolas,"Courier New",monospace;font-size:10pt;}` +
+    `</style></head><body>${body}</body></html>`;
   const plain = blocks.map(blockToPlain).join('').trim();
   const markdown = serialize({ blocks });
   return { html, plain, markdown };

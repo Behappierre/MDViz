@@ -67,14 +67,7 @@ export function FileDrop({ onFile, onError, disabled, children }: FileDropProps)
       tabIndex={0}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && openPicker()}
       aria-label="Drop or click to upload Markdown file"
-      style={{
-        border: '2px dashed #666',
-        borderRadius: 8,
-        padding: 24,
-        textAlign: 'center',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        opacity: disabled ? 0.6 : 1,
-      }}
+      className={`file-drop${disabled ? ' file-drop--disabled' : ''}`}
     >
       <input
         ref={inputRef}
@@ -84,7 +77,17 @@ export function FileDrop({ onFile, onError, disabled, children }: FileDropProps)
         style={{ display: 'none' }}
         aria-hidden
       />
-      {children ?? 'Drop .md file here or click to upload'}
+      {children ?? (
+        <>
+          <svg className="file-drop-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          <div className="file-drop-title">Drop your Markdown file here</div>
+          <div className="file-drop-sub">or click to browse &nbsp;·&nbsp; .md files only</div>
+        </>
+      )}
     </div>
   );
 }

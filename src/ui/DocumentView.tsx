@@ -15,15 +15,7 @@ export function DocumentView({ doc }: DocumentViewProps) {
 
   return (
     <article
-      className="md-visualizer-document-view"
-      style={{
-        background: '#fff',
-        padding: '24px 20px',
-        borderRadius: 8,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-        minHeight: 200,
-        outline: 'none',
-      }}
+      className="document-view"
       tabIndex={0}
       role="document"
       aria-label="Document view"

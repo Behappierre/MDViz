@@ -32,17 +32,7 @@ export function BlockCard({ block, selected, onSelect, onDragStart }: BlockCardP
       }}
       data-block-id={block.id}
       aria-selected={selected}
-      style={{
-        border: selected ? '2px solid #0a7ea4' : '1px solid #ddd',
-        borderRadius: 6,
-        padding: 12,
-        marginBottom: 8,
-        cursor: 'pointer',
-        background: selected ? '#e8f4f8' : '#fff',
-        display: 'flex',
-        gap: 8,
-        alignItems: 'flex-start',
-      }}
+      className={`block-card${selected ? ' block-card--selected' : ''}`}
     >
       {onDragStart && (
         <span
@@ -52,14 +42,14 @@ export function BlockCard({ block, selected, onSelect, onDragStart }: BlockCardP
             e.dataTransfer.effectAllowed = 'move';
             onDragStart(block.id);
           }}
-          style={{ cursor: 'grab', padding: 4, userSelect: 'none' }}
+          className="drag-handle"
           aria-label="Drag to reorder"
         >
-          ⋮⋮
+          ⠿
         </span>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 11, color: '#666', marginBottom: 4 }}>{blockTypeLabel(block)}</div>
+        <div className="block-type-badge">{blockTypeLabel(block)}</div>
         <BlockContent block={block} />
       </div>
     </div>

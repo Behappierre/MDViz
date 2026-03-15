@@ -17,6 +17,7 @@ import { DocumentView } from './ui/DocumentView';
 import { Toolbar } from './ui/Toolbar';
 import type { ViewMode } from './ui/Toolbar';
 import { StatusBar } from './ui/StatusBar';
+import { HelpModal } from './ui/HelpModal';
 
 function downloadMarkdown(content: string, filename: string) {
   const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
@@ -31,6 +32,7 @@ function downloadMarkdown(content: string, filename: string) {
 export default function App() {
   const [state, setState] = useState(createInitialState);
   const [viewMode, setViewMode] = useState<ViewMode>('blocks');
+  const [showHelp, setShowHelp] = useState(false);
 
   const handleFile = useCallback((_file: File, text: string) => {
     setState((s) => ({ ...s, status: 'loading', statusMessage: 'Parsing…' }));
@@ -149,43 +151,65 @@ export default function App() {
   const hasSelection = state.selectedIds.size > 0;
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: 16, fontFamily: 'system-ui, sans-serif' }}>
-      <h1 style={{ marginTop: 0 }}>MD Visualizer</h1>
-      <FileDrop onFile={handleFile} onError={(msg) => setState((s) => ({ ...s, status: 'error', statusMessage: msg }))} />
-      {hasBlocks && (
-        <>
-          <Toolbar
-            viewMode={viewMode}
-            onViewChange={setViewMode}
-            onCopy={handleCopy}
-            onExport={handleExport}
-            onUndo={handleUndo}
-            onRedo={handleRedo}
-            canUndo={canUndo(state.history)}
-            canRedo={canRedo(state.history)}
-            hasSelection={hasSelection}
-            hasBlocks={hasBlocks}
-            copyFeedback={state.copyFeedback}
-            exportFeedback={state.exportFeedback}
-          />
-          {viewMode === 'blocks' ? (
-            <BlockRenderer
-              doc={state.doc}
-              selectedIds={state.selectedIds}
-              onSelect={handleSelect}
-              onReorder={handleReorder}
+    <div className="app-shell">
+      <header className="app-header">
+        <div className="app-header-inner">
+          <div className="app-brand">
+            <div className="app-brand-icon">M↓</div>
+            <span className="app-name">MD Visualizer</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span className="app-tagline">Parse · Reorder · Export</span>
+            <button
+              type="button"
+              className="btn-help"
+              onClick={() => setShowHelp(true)}
+              aria-label="Help"
+              title="Help"
+            >
+              ?
+            </button>
+          </div>
+        </div>
+      </header>
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+      <div className="app-main">
+        <FileDrop onFile={handleFile} onError={(msg) => setState((s) => ({ ...s, status: 'error', statusMessage: msg }))} />
+        {hasBlocks && (
+          <>
+            <Toolbar
+              viewMode={viewMode}
+              onViewChange={setViewMode}
+              onCopy={handleCopy}
+              onExport={handleExport}
+              onUndo={handleUndo}
+              onRedo={handleRedo}
+              canUndo={canUndo(state.history)}
+              canRedo={canRedo(state.history)}
+              hasSelection={hasSelection}
+              hasBlocks={hasBlocks}
+              copyFeedback={state.copyFeedback}
+              exportFeedback={state.exportFeedback}
             />
-          ) : (
-            <DocumentView doc={state.doc} />
-          )}
-        </>
-      )}
-      <StatusBar
-        status={state.status}
-        statusMessage={state.statusMessage}
-        selectedCount={state.selectedIds.size}
-        blockCount={state.doc.blocks.length}
-      />
+            {viewMode === 'blocks' ? (
+              <BlockRenderer
+                doc={state.doc}
+                selectedIds={state.selectedIds}
+                onSelect={handleSelect}
+                onReorder={handleReorder}
+              />
+            ) : (
+              <DocumentView doc={state.doc} />
+            )}
+          </>
+        )}
+        <StatusBar
+          status={state.status}
+          statusMessage={state.statusMessage}
+          selectedCount={state.selectedIds.size}
+          blockCount={state.doc.blocks.length}
+        />
+      </div>
     </div>
   );
 }

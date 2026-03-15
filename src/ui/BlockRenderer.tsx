@@ -71,15 +71,7 @@ export function BlockRenderer({ doc, selectedIds, onSelect, onReorder }: BlockRe
       {doc.blocks.map((block) => (
         <React.Fragment key={block.id}>
           {dropTargetId === block.id && (
-            <div
-              style={{
-                height: 4,
-                background: '#0a7ea4',
-                borderRadius: 2,
-                marginBottom: 4,
-              }}
-              aria-hidden
-            />
+            <div className="drop-indicator" aria-hidden />
           )}
           <div
             onDragOver={(e) => handleDragOver(e, block.id)}
@@ -103,7 +95,7 @@ export function BlockRenderer({ doc, selectedIds, onSelect, onReorder }: BlockRe
         onDrop={handleDropOnList}
         style={{
           minHeight: dropTargetId === '__end' ? 24 : 12,
-          background: dropTargetId === '__end' ? 'rgba(10,126,164,0.1)' : 'transparent',
+          background: dropTargetId === '__end' ? 'rgba(99,102,241,0.08)' : 'transparent',
           borderRadius: 4,
           marginTop: 4,
         }}
