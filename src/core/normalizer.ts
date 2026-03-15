@@ -71,19 +71,23 @@ function normalizeBlock(node: MdastNode): Block | null {
     }
     case 'list': {
       const n = node as { ordered?: boolean; start?: number | null; children?: MdastNode[] };
+      const checkedArr: (boolean | null)[] = [];
       const items: Block[][] = (n.children ?? []).map((li) => {
-        const liNode = li as { children?: MdastNode[] };
+        const liNode = li as { checked?: boolean | null; children?: MdastNode[] };
+        checkedArr.push(liNode.checked ?? null);
         return (liNode.children ?? []).flatMap((c) => {
           const b = normalizeBlock(c);
           return b ? [b] : [];
         });
       });
+      const isTaskList = checkedArr.some((c) => c !== null);
       return {
         id,
         t: 'list',
         ordered: n.ordered ?? false,
         start: n.start ?? undefined,
         items,
+        ...(isTaskList ? { checked: checkedArr } : {}),
       };
     }
     case 'table': {

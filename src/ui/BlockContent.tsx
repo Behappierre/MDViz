@@ -44,9 +44,16 @@ export function BlockContent({ block }: BlockContentProps): React.ReactNode {
     }
     case 'code':
       return (
-        <pre>
-          <code className={block.lang ? `language-${block.lang}` : ''}>{block.value}</code>
-        </pre>
+        <div>
+          {block.lang && (
+            <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 4, fontFamily: 'var(--font)' }}>
+              {block.lang}
+            </div>
+          )}
+          <pre>
+            <code className={block.lang ? `language-${block.lang}` : ''}>{block.value}</code>
+          </pre>
+        </div>
       );
     case 'blockquote':
       return (
@@ -59,15 +66,23 @@ export function BlockContent({ block }: BlockContentProps): React.ReactNode {
     case 'list': {
       const List = block.ordered ? 'ol' : 'ul';
       const start = block.ordered ? block.start : undefined;
+      const isTaskList = block.checked?.some((c) => c !== null);
       return (
-        <List start={start}>
-          {block.items.map((itemBlocks, i) => (
-            <li key={i}>
-              {itemBlocks.map((b) => (
-                <BlockContent key={b.id} block={b} />
-              ))}
-            </li>
-          ))}
+        <List start={start} style={isTaskList ? { listStyle: 'none', paddingLeft: '0.5em' } : undefined}>
+          {block.items.map((itemBlocks, i) => {
+            const checked = block.checked?.[i];
+            const isTask = checked !== null && checked !== undefined;
+            return (
+              <li key={i} style={isTask ? { display: 'flex', alignItems: 'baseline', gap: 6 } : undefined}>
+                {isTask && <span style={{ userSelect: 'none', flexShrink: 0 }}>{checked ? '☑' : '☐'}</span>}
+                <span style={isTask ? { flex: 1 } : undefined}>
+                  {itemBlocks.map((b) => (
+                    <BlockContent key={b.id} block={b} />
+                  ))}
+                </span>
+              </li>
+            );
+          })}
         </List>
       );
     }

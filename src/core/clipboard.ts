@@ -98,15 +98,27 @@ function blockToHtml(block: Block): string {
       return '<p>' + block.children.map(inlineToHtml).join('') + '</p>';
     case 'heading':
       return `<h${block.depth}>${block.children.map(inlineToHtml).join('')}</h${block.depth}>`;
-    case 'code':
-      return `<pre><code class="language-${escapeAttr(block.lang)}">${escapeHtml(block.value)}</code></pre>`;
+    case 'code': {
+      const langLabel = block.lang
+        ? `<p style="font-size:9pt;font-weight:600;color:#6366f1;font-family:Consolas,'Courier New',monospace;margin:0 0 3px;">${escapeHtml(block.lang)}</p>`
+        : '';
+      return `${langLabel}<pre style="background:#0f172a;color:#cbd5e1;padding:12px 16px;border-radius:6px;font-family:Consolas,'Courier New',monospace;font-size:10pt;"><code>${escapeHtml(block.value)}</code></pre>`;
+    }
     case 'blockquote':
-      return '<blockquote>' + block.children.map(blockToHtml).join('') + '</blockquote>';
-    case 'list':
+      return '<blockquote style="margin:0;padding:8px 16px;border-left:3px solid #6366f1;background:#eef2ff;color:#374151;font-style:italic;">' + block.children.map(blockToHtml).join('') + '</blockquote>';
+    case 'list': {
       const tag = block.ordered ? 'ol' : 'ul';
       const start = block.ordered && block.start != null ? ` start="${block.start}"` : '';
-      const lis = block.items.map((itemBlocks) => '<li>' + itemBlocks.map(blockToHtml).join('') + '</li>').join('');
-      return `<${tag}${start}>${lis}</${tag}>`;
+      const isTaskList = block.checked?.some((c) => c !== null);
+      const listStyle = isTaskList ? ' style="list-style:none;padding-left:0;"' : '';
+      const lis = block.items.map((itemBlocks, i) => {
+        const checked = block.checked?.[i];
+        const isTask = checked !== null && checked !== undefined;
+        const checkbox = isTask ? `<span style="margin-right:6px;">${checked ? '&#9745;' : '&#9744;'}</span>` : '';
+        return `<li>${checkbox}${itemBlocks.map(blockToHtml).join('')}</li>`;
+      }).join('');
+      return `<${tag}${start}${listStyle}>${lis}</${tag}>`;
+    }
     case 'table':
       const headerCells = block.header.map((cell) => '<th>' + cell.map(inlineToHtml).join('') + '</th>').join('');
       const bodyRows = block.rows.map((row) => '<tr>' + row.map((cell) => '<td>' + cell.map(inlineToHtml).join('') + '</td>').join('') + '</tr>').join('');
@@ -131,7 +143,7 @@ function blockToHtml(block: Block): string {
 export function buildClipboardPayload(blocks: Block[]): ClipboardPayload {
   const body = sanitizeHtml(blocks.map(blockToHtml).join(''));
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>` +
-    `body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.5;color:#000;}` +
+    `body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.5;color:#000;font-variant-ligatures:none;}` +
     `code,pre{font-family:Consolas,"Courier New",monospace;font-size:10pt;}` +
     `</style></head><body>${body}</body></html>`;
   const plain = blocks.map(blockToPlain).join('').trim();

@@ -5,6 +5,7 @@
 
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
 
 export type MdastRoot = { type: 'root'; children: MdastNode[] };
 export type MdastNode =
@@ -20,7 +21,7 @@ export type MdastNode =
   | { type: 'code'; lang?: string | null; value: string }
   | { type: 'blockquote'; children: MdastBlock[] }
   | { type: 'list'; ordered: boolean; start?: number | null; children: MdastListItem[] }
-  | { type: 'listItem'; spread?: boolean; children: MdastBlock[] }
+  | { type: 'listItem'; checked?: boolean | null; spread?: boolean; children: MdastBlock[] }
   | { type: 'table'; align?: (string | null)[]; children: MdastTableContent[] }
   | { type: 'tableRow'; children: MdastTableCell[] }
   | { type: 'tableCell'; children: MdastPhrasing[] }
@@ -34,7 +35,7 @@ export type MdastListItem = MdastNode & { type: string };
 export type MdastTableContent = MdastNode & { type: string };
 export type MdastTableCell = MdastNode & { type: string };
 
-const processor = unified().use(remarkParse, { commonmark: true });
+const processor = unified().use(remarkParse).use(remarkGfm);
 
 export type ParseResult =
   | { ok: true; ast: MdastRoot }

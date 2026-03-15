@@ -27,7 +27,7 @@ export type Block =
   | { id: BlockId; t: 'paragraph'; children: Inline[] }
   | { id: BlockId; t: 'code'; lang: string; value: string }
   | { id: BlockId; t: 'blockquote'; children: Block[] }
-  | { id: BlockId; t: 'list'; ordered: boolean; start?: number; items: Block[][] }
+  | { id: BlockId; t: 'list'; ordered: boolean; start?: number; items: Block[][]; checked?: (boolean | null)[] }
   | { id: BlockId; t: 'table'; header: TableRow; rows: TableRow[] }
   | { id: BlockId; t: 'thematicBreak' }
   | { id: BlockId; t: 'html'; value: string }

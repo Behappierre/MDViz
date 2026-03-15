@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(node -e \"import\\(''remark-gfm''\\).then\\(m => console.log\\(''ok'', typeof m.default\\)\\)\")"
     ]
   }
 }
