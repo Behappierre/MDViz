@@ -11,6 +11,7 @@ import { reorderBlocksById } from './core/reorder';
 import { buildClipboardPayload } from './core/clipboard';
 import { initHistory, pushHistory, undo, redo, canUndo, canRedo } from './state/history';
 import { createInitialState } from './state/store';
+import { trackFileLoaded, trackCopyUsed, trackExportUsed, trackViewSwitched, trackErrorOccurred } from './core/analytics';
 import { FileDrop } from './ui/FileDrop';
 import { BlockRenderer } from './ui/BlockRenderer';
 import { DocumentView } from './ui/DocumentView';
@@ -32,12 +33,17 @@ function downloadMarkdown(content: string, filename: string) {
 export default function App() {
   const [state, setState] = useState(createInitialState);
   const [viewMode, setViewMode] = useState<ViewMode>('blocks');
+  const handleViewChange = useCallback((mode: ViewMode) => {
+    setViewMode(mode);
+    trackViewSwitched(mode);
+  }, []);
   const [showHelp, setShowHelp] = useState(false);
 
   const handleFile = useCallback((_file: File, text: string) => {
     setState((s) => ({ ...s, status: 'loading', statusMessage: 'Parsing…' }));
     const result = parseMarkdown(text);
     if (!result.ok) {
+      trackErrorOccurred(result.error);
       setState((s) => ({
         ...s,
         status: 'error',
@@ -48,6 +54,7 @@ export default function App() {
       return;
     }
     const doc = normalize(result.ast);
+    trackFileLoaded(doc.blocks.length);
     setState((s) => ({
       ...s,
       doc,
@@ -97,12 +104,14 @@ export default function App() {
         setState((s) => ({ ...s, copyFeedback: true }));
       }
     );
+    trackCopyUsed(viewMode, blocksToCopy.length);
     setTimeout(() => setState((s) => ({ ...s, copyFeedback: false })), 2000);
   }, [state.doc, state.selectedIds, viewMode]);
 
   const handleExport = useCallback(() => {
     const markdown = serialize(state.doc);
     downloadMarkdown(markdown, 'export.md');
+    trackExportUsed(state.doc.blocks.length);
     setState((s) => ({ ...s, exportFeedback: true }));
     setTimeout(() => setState((s) => ({ ...s, exportFeedback: false })), 2000);
   }, [state.doc]);
@@ -179,7 +188,7 @@ export default function App() {
           <>
             <Toolbar
               viewMode={viewMode}
-              onViewChange={setViewMode}
+              onViewChange={handleViewChange}
               onCopy={handleCopy}
               onExport={handleExport}
               onUndo={handleUndo}
